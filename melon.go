@@ -11,7 +11,7 @@ const (
 //melon use ring to set it's metrics
 //sweet  bitter
 
-type melon struct {
+type Ring struct {
 	//input set length
 	length int64
 
@@ -33,13 +33,13 @@ type point struct {
 	__pad [63]byte //padding to prevent false sharing
 }
 
-type Option func(*melon)
+type Option func(*Ring)
 
-func New(length int64, options ...Option) *melon {
+func New(length int64, options ...Option) *Ring {
 	//default buff length
 	size := length * defaultPropFactor
 	//melon
-	me := &melon{
+	me := &Ring{
 		size:   size,
 		points: make([]point, size),
 		factor: defaultPropFactor,
@@ -50,19 +50,19 @@ func New(length int64, options ...Option) *melon {
 	return me
 }
 
-func (r *melon) Reset() {
+func (r *Ring) Reset() {
 	r.points = make([]point, r.size)
 	atomic.StoreInt64(&r.index, 0)
 }
 
-func (r *melon) Feed(sweet bool) {
+func (r *Ring) Feed(sweet bool) {
 	index := atomic.AddInt64(&r.index, 1)
 	//default false means success
 	//if sweet == true; store false
 	r.points[index%r.size].val = !sweet
 }
 
-func (r *melon) Good() bool {
+func (r *Ring) OK() bool {
 	index := atomic.LoadInt64(&r.index)
 	for _, opt := range r.anchors {
 		if opt.bitter(r.size, r.points, index) {
@@ -72,7 +72,7 @@ func (r *melon) Good() bool {
 	return true
 }
 
-func (r *melon) Stats() []uint8 {
+func (r *Ring) Stats() []uint8 {
 	var i int64
 	stat := make([]uint8, r.size)
 	for i = 0; i < r.size; i++ {

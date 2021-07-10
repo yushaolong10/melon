@@ -1,11 +1,11 @@
 package melon
 
-//anchor point the metric length & threshold
+//anchor point the metric total & threshold
 
 func OptionAnchor(total, threshold int64) Option {
-	return func(me *melon) {
-		if threshold <= total && total <= me.size {
-			me.anchors = append(me.anchors, newAnchor(total, threshold))
+	return func(r *Ring) {
+		if threshold <= total && total <= r.size {
+			r.anchors = append(r.anchors, newAnchor(total, threshold))
 		}
 	}
 }
@@ -22,8 +22,8 @@ type anchor struct {
 	threshold int64
 }
 
-func (o *anchor) bitter(size int64, points []point, index int64) bool {
-	start := (index - o.total + size) % size
+func (a *anchor) bitter(size int64, points []point, index int64) bool {
+	start := (index - a.total + size) % size
 	end := index % size
 	if start > end {
 		end = end + size
@@ -34,7 +34,7 @@ func (o *anchor) bitter(size int64, points []point, index int64) bool {
 			count++
 		}
 	}
-	if count >= o.threshold {
+	if count >= a.threshold {
 		return true
 	}
 	return false

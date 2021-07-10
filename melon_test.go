@@ -26,13 +26,13 @@ func TestMelon(t *testing.T) {
 	fmt.Println(me.Stats())
 }
 
-func monitor(ctx context.Context, cancel context.CancelFunc, me *melon) {
+func monitor(ctx context.Context, cancel context.CancelFunc, me *Ring) {
 	var i int
 	for {
 		i++
 		time.Sleep(time.Second)
 		begin := time.Now()
-		good := me.Good()
+		good := me.OK()
 		interval := time.Since(begin).Nanoseconds() / 1e6
 		fmt.Println("stat good", i, good, me.index, interval)
 		if i > 200 {
@@ -43,7 +43,7 @@ func monitor(ctx context.Context, cancel context.CancelFunc, me *melon) {
 	}
 }
 
-func concurrency(ctx context.Context, me *melon) {
+func concurrency(ctx context.Context, me *Ring) {
 	var i int
 	var sweet bool
 	for {
@@ -70,6 +70,26 @@ func BenchmarkMelon(b *testing.B) {
 		} else {
 			me.Feed(false)
 		}
-		me.Good()
+		me.OK()
+	}
+}
+
+func BenchmarkMelonOk(b *testing.B) {
+	me := New(5000, OptionAnchor(100, 70))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		me.OK()
+	}
+}
+
+func BenchmarkMelonFeed(b *testing.B) {
+	me := New(5000, OptionAnchor(100, 70))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if i%10 == 0 {
+			me.Feed(true)
+		} else {
+			me.Feed(false)
+		}
 	}
 }
