@@ -4,7 +4,7 @@ package melon
 
 func OptionAnchor(total, threshold int64) Option {
 	return func(r *Ring) {
-		if threshold <= total && total <= r.size {
+		if threshold <= total && total <= r.length {
 			r.anchors = append(r.anchors, newAnchor(total, threshold))
 		}
 	}
